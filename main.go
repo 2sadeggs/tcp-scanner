@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"sync"
@@ -25,20 +26,30 @@ func isOpen(host string, port int, timeout time.Duration) bool {
 }
 
 func main() {
+	/*flag 包可以帮助我们编写命令行程序。我们可以配置每个字符串或数字。我们为主机名及要测试的端口范围和连接超时添加参数。*/
+	hostname := flag.String("hostname", "", "hostname to test")
+	startPort := flag.Int("startPort", 80, "the port on which the scanning starts")
+	endPort := flag.Int("endPort", 100, "the port from which the scanning ends")
+	timeout := flag.Duration("timeout", time.Millisecond*200, "timeout")
+	flag.Parse()
+
 	//声明一个端口切片 用于保存想要的测试端口结果 也就是打开的端口
 	ports := []int{}
 
 	wg := &sync.WaitGroup{} //声明一个wg 用于控制并发
-
-	timeout := time.Millisecond * 200 //定义超时时间
-	for port := 1; port < 100; port++ {
+	/*唯一的问题就是，现在这个程序会有竞争条件。
+	  在只扫描少数端口时，速度比较慢，可能不会出现，
+	  但确实存在这个问题。所以我们需要使用 mutex 来修复它。*/
+	mutex := &sync.Mutex{}
+	for port := *startPort; port <= *endPort; port++ {
 		wg.Add(1) //每个for循环开始 wg计数加1
 		go func(p int) {
-			fmt.Println(p) //加个打印 查看port是否是并发安全
-			//答案是否定 哈哈 有点意思
-			opened := isOpen("google.com", p, timeout)
+			//fmt.Println(p) //加个打印 查看port是否是并发安全
+			opened := isOpen(*hostname, p, *timeout)
 			if opened {
+				mutex.Lock()
 				ports = append(ports, p)
+				mutex.Unlock()
 			}
 			wg.Done() //每个匿名函数完成 wg计数减1
 		}(port)
@@ -51,7 +62,8 @@ func main() {
 	fmt.Printf("opened ports: %v\n", ports)
 }
 
-//每次的测试结果都是25 有点意外80 没开
-//telnet验证 确实没开
-//telnet google.com 80
-/*opened ports: [25]*/
+/*
+测试结果
+PS D:\GolandProjects\tcp-scanner> .\main.exe -hostname www.baidu.com -startPort 1 -endPort 500
+opened ports: [110 25]
+*/
