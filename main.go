@@ -1,5 +1,7 @@
 package main
 
+/*注意：windows主机有可能telnet任何主机的25端口都通 不过这都是幻觉 幻觉 实际不同
+有可能是火绒等一些杀毒软件造成的*/
 import (
 	"flag"
 	"fmt"
@@ -27,10 +29,10 @@ func isOpen(host string, port int, timeout time.Duration) bool {
 
 func main() {
 	/*flag 包可以帮助我们编写命令行程序。我们可以配置每个字符串或数字。我们为主机名及要测试的端口范围和连接超时添加参数。*/
-	hostname := flag.String("hostname", "", "hostname to test")
-	startPort := flag.Int("startPort", 80, "the port on which the scanning starts")
-	endPort := flag.Int("endPort", 100, "the port from which the scanning ends")
-	timeout := flag.Duration("timeout", time.Millisecond*200, "timeout")
+	hostname := flag.String("h", "", "hostname to test")
+	startPort := flag.Int("s", 80, "the port on which the scanning starts")
+	endPort := flag.Int("e", 100, "the port from which the scanning ends")
+	timeout := flag.Duration("t", time.Millisecond*200, "timeout")
 	flag.Parse()
 
 	//声明一个端口切片 用于保存想要的测试端口结果 也就是打开的端口
