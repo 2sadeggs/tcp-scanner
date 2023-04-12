@@ -17,3 +17,8 @@ func main() {
 		fmt.Println(err)
 	}
 }
+
+/*执行时间很长 卡死在等待页面 需要处理超时*/
+/*PS D:\GolandProjects\tcp-scanner> go run .\main.go
+dial tcp 142.251.43.14:80: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or establ
+ished connection failed because connected host has failed to respond.*/
